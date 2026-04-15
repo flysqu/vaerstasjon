@@ -6,18 +6,8 @@ import værstasjon_micropython
 radio.config(group=60,length=32)
 radio.on()
 
-# Global variables
-num_rain_dumps = 0
-rain_monitor_started = False
-last_pin_state = 1  # Start assuming HIGH (due to pull-up)
-num_wind_turns = 0
-wind_mph = 0.0
-wind_monitor_started = False
-last_wind_pin_state = 1
-last_wind_update_time = 0
-
 bme = bme280.BME280(i2c, address=0x76)
-    
+
 værstasjon_micropython.start_rain_monitoring()
 værstasjon_micropython.start_wind_monitoring()
 

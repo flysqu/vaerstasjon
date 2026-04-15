@@ -2,25 +2,16 @@ from microbit import *
 import bme280_microbit_lowmem as bme280
 import utime
 import radio
-import værstasjon_micropython
+from værstasjon_micropython import værstasjon_micropython
 radio.config(group=60,length=32)
 radio.power = 7
 radio.on()
 
-# Global variables
-num_rain_dumps = 0
-rain_monitor_started = False
-last_pin_state = 1  # Start assuming HIGH (due to pull-up)
-num_wind_turns = 0
-wind_mph = 0.0
-wind_monitor_started = False
-last_wind_pin_state = 1
-last_wind_update_time = 0
-
 bme = bme280.BME280(i2c, address=0x76)
+station = værstasjon_micropython()
 
-værstasjon_micropython.start_rain_monitoring()
-værstasjon_micropython.start_wind_monitoring()
+station.start_rain_monitoring()
+station.start_wind_monitoring()
 
 # Oppdater regn og wind puls
 RASK_INTERVAL = 75
@@ -43,19 +34,18 @@ while True:
         last_fast = utime.ticks_add(last_fast, RASK_INTERVAL)
         display.show(Image.BUTTERFLY)
         
-        
-        værstasjon_micropython.check_rain_pulse()
-        værstasjon_micropython.check_wind_pulse()
+        station.check_rain_pulse()
+        station.check_wind_pulse()
     if utime.ticks_diff(now, last_radio) >= RADIO_INTERVAL:
         last_radio = utime.ticks_add(last_radio, RADIO_INTERVAL)
         display.show(Image.HAPPY)
 
         
-        direction = værstasjon_micropython.wind_direction()
-        speed = værstasjon_micropython.wind_speed()
+        direction = station.wind_direction()
+        speed = station.wind_speed()
         temp, pressure, humidity = bme.values()
         altitude = bme.altitude()
-        rainfall = rain_cm()
+        rainfall = station.rain_cm()
         
         send_strings = ["W"+str(speed)+":D"+str(direction)+":R"+str(rainfall),":T"+str(temp)+":P"+str(pressure),":H"+str(humidity)+":A"+str(altitude)]
         for send_string in send_strings:
@@ -64,10 +54,9 @@ while True:
 
             sleep(100)
         # Reset rainfall counter so next interval reports per-interval rainfall
-        reset_rain()
+        station.reset_rain()
     if utime.ticks_diff(now, last_slow) >= SAKTE_INTERVAL:
         last_slow = utime.ticks_add(last_slow, SAKTE_INTERVAL)
         display.show(Image.ARROW_E)
         
-        værstasjon_micropython.update_wind_speed()
-
+        station.update_wind_speed()
