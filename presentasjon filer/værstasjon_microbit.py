@@ -4,8 +4,7 @@ import utime
 import radio
 import gc
 from værstasjon_micropython import værstasjon_micropython
-radio.config(group=60,length=32)
-radio.power = 7
+radio.config(group=60,length=32, power=7)
 radio.on()
 
 bme = bme280.BME280(i2c, address=0x76)
@@ -43,11 +42,12 @@ while True:
 
         direction = station.wind_direction()
         speed = int(station.wind_speed())
-        temp_raw, _, _ = bme.read_compensated_data()
+        temp, pressure, humidity = bme.values()
+        altitude = bme.altitude()
         rainfall = station.num_rain_dumps
-
+        send_strings = ["W"+str(speed)+":D"+str(direction)+":R"+str(rainfall),":T"+str(temp)+":P"+str(pressure),":H"+str(humidity)+":A"+str(altitude)]
         gc.collect()
-        radio.send("W%dD%sR%dT%d" % (speed, direction, temp_raw // 100))
+        radio.send(send_strings)
         sleep(100)
 
         # Reset rainfall counter so next interval reports per-interval rainfall
