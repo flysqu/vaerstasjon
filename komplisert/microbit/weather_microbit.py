@@ -2,7 +2,7 @@ from microbit import *
 import bme280_microbit_lowmem as bme280
 import utime
 import radio
-import værstasjon_micropython
+import værstasjon_micropython as værstasjon_micropython
 radio.config(group=60,length=32)
 radio.on()
 
